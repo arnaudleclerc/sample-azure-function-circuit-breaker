@@ -1,4 +1,6 @@
-﻿namespace Functions.Extensions.CircuitBreaker
+﻿using System;
+
+namespace Functions.Extensions.CircuitBreaker
 {
 	public class CircuitBreakerMessage
 	{
@@ -9,5 +11,6 @@
 		public int FailureRequestThresholdMilliseconds { get; set; }
 		public int OpenTimeoutExpireMilliseconds { get; set; }
 		public int HalfOpenSuccessThreshold { get; set; }
+		public DateTime LoggedTime { get; set; }
 	}
 }

@@ -7,7 +7,9 @@ namespace Functions.Extensions.CircuitBreaker
 	{
 		public static IServiceCollection AddCircuitBreaker(this IServiceCollection services, string circuitBreakerStorageAccountConnectionString)
 		{
-			return services.AddTransient(sp => new CircuitBreakerQueueService(circuitBreakerStorageAccountConnectionString));
+			return services
+				.AddTransient(sp => new CircuitBreakerQueueService(circuitBreakerStorageAccountConnectionString))
+				.AddTransient<ICircuitBreakerStateService>(sp => new CircuitBreakerStateService(circuitBreakerStorageAccountConnectionString));
 		}
 	}
 }

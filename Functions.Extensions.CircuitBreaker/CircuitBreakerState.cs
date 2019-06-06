@@ -2,9 +2,9 @@
 {
 	public class CircuitBreakerState
 	{
-		internal static CircuitBreakerState Closed = new CircuitBreakerState("closed");
-		internal static CircuitBreakerState Open = new CircuitBreakerState("open");
-		internal static CircuitBreakerState HalfOpen = new CircuitBreakerState("halfopen");
+		public static CircuitBreakerState Closed = new CircuitBreakerState("closed");
+		public static CircuitBreakerState Open = new CircuitBreakerState("open");
+		public static CircuitBreakerState HalfOpen = new CircuitBreakerState("halfopen");
 
 		private readonly string _name;
 

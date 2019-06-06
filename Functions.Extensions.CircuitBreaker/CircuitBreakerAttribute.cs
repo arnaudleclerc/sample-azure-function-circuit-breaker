@@ -40,7 +40,7 @@ namespace Functions.Extensions.CircuitBreaker
 		public override Task OnExecutingAsync(FunctionExecutingContext executingContext, CancellationToken cancellationToken)
 		{
 			var request = executingContext.Arguments.Values.FirstOrDefault(argument => argument is HttpRequest) as HttpRequest;
-			var stateReaderService = request.HttpContext.RequestServices.GetRequiredService<CircuitBreakerStateReaderService>();
+			var stateReaderService = request.HttpContext.RequestServices.GetRequiredService<ICircuitBreakerStateService>();
 
 			_state = stateReaderService.GetStateAsync(_serviceName, executingContext.FunctionName).Result;
 
