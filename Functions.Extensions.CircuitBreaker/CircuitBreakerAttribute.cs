@@ -70,7 +70,8 @@ namespace Functions.Extensions.CircuitBreaker
 					FunctionName = executedContext.FunctionName,
 					HalfOpenSuccessThreshold = _halfOpenSuccessThreshold,
 					IsSuccess = executedContext.FunctionResult.Succeeded,
-					OpenTimeoutExpireMilliseconds = _openTimeoutExpireMilliseconds
+					OpenTimeoutExpireMilliseconds = _openTimeoutExpireMilliseconds,
+					LoggedTime = DateTime.Now
 				}).Wait();
 			}
 

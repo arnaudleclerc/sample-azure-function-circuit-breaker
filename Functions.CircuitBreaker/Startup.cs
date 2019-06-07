@@ -1,6 +1,8 @@
-﻿using Functions.Extensions.CircuitBreaker;
+﻿using Functions.CircuitBreaker.Services;
+using Functions.Extensions.CircuitBreaker;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 
 [assembly: FunctionsStartup(typeof(Functions.CircuitBreaker.Startup))]
@@ -16,7 +18,8 @@ namespace Functions.CircuitBreaker
 					.AddEnvironmentVariables()
 					.Build();
 
-			builder.Services.AddCircuitBreaker(config["CircuitBreakerStorageAccountConnectionString"]);
+			builder.Services.AddCircuitBreaker(config["CircuitBreakerStorageAccountConnectionString"])
+				.AddTransient(sp => new CircuitBreakerRepository(sp.GetRequiredService<ICircuitBreakerStateService>(), config["CircuitBreakerStorageAccountConnectionString"]));
 		}
 	}
 }

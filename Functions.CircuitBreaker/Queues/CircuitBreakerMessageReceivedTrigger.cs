@@ -14,6 +14,7 @@ namespace Functions.CircuitBreaker.Queues
 			_circuitBreakerRepository = circuitBreakerRepository;
 		}
 
+		[FunctionName("CircuitBreakerMessageReceivedTrigger")]
 		public async Task Run([QueueTrigger("circuitbreaker", Connection = "CircuitBreakerStorageAccountConnectionString")]CircuitBreakerMessage message)
 		{
 			await _circuitBreakerRepository.UpdateConfigurationAsync(message);

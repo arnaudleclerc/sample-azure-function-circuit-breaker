@@ -48,7 +48,8 @@ namespace Functions.Extensions.CircuitBreaker.Internal
 			{
 				PartitionKey = serviceName,
 				RowKey = functionName,
-				State = CircuitBreakerState.Open.ToString()
+				State = CircuitBreakerState.Open.ToString(),
+				ETag = "*"
 			}));
 		}
 
@@ -60,7 +61,8 @@ namespace Functions.Extensions.CircuitBreaker.Internal
 			{
 				PartitionKey = serviceName,
 				RowKey = functionName,
-				State = CircuitBreakerState.HalfOpen.ToString()
+				State = CircuitBreakerState.HalfOpen.ToString(),
+				ETag = "*"
 			}));
 		}
 
