@@ -1,4 +1,6 @@
-﻿namespace Functions.Extensions.CircuitBreaker
+﻿using System;
+
+namespace Functions.Extensions.CircuitBreaker
 {
 	public class CircuitBreakerState
 	{
@@ -7,6 +9,11 @@
 		public static CircuitBreakerState HalfOpen = new CircuitBreakerState("halfopen");
 
 		private readonly string _name;
+
+		public DateTimeOffset Timestamp
+		{
+			get; private set;
+		}
 
 		public bool IsClosed => _name == "closed";
 
@@ -19,24 +26,30 @@
 			_name = name;
 		}
 
-		internal static CircuitBreakerState FromState(string state)
+		internal static CircuitBreakerState FromState(CircuitBreakerFunctionState functionState)
 		{
-			if(state == Closed.ToString())
+			CircuitBreakerState result = null;
+			if (functionState != null)
 			{
-				return Closed;
-			}
+				if (functionState.State == Closed.ToString())
+				{
+					result = Closed;
+				}
 
-			if(state == Open.ToString())
-			{
-				return Open;
-			}
+				if (functionState.State == Open.ToString())
+				{
+					result = Open;
+				}
 
-			if(state == HalfOpen.ToString())
-			{
-				return HalfOpen;
-			}
+				if (functionState.State == HalfOpen.ToString())
+				{
+					result = HalfOpen;
+				}
 
-			return null;
+				result.Timestamp = functionState.Timestamp;
+			}
+			
+			return result;
 		}
 
 		public override string ToString()

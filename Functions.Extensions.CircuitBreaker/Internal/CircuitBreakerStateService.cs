@@ -25,7 +25,7 @@ namespace Functions.Extensions.CircuitBreaker.Internal
 			var table = _cloudStorageAccount.CreateCloudTableClient().GetTableReference(TABLE_STATE);
 
 			CircuitBreakerFunctionState functionState = (await table.ExecuteAsync(TableOperation.Retrieve<CircuitBreakerFunctionState>(serviceName, functionName))).Result as CircuitBreakerFunctionState;
-			return functionState == null ? null : CircuitBreakerState.FromState(functionState.State);
+			return functionState == null ? null : CircuitBreakerState.FromState(functionState);
 		}
 
 		public async Task CloseCircuitAsync(string serviceName, string functionName)

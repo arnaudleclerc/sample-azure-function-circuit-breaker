@@ -89,14 +89,21 @@ namespace Functions.CircuitBreaker.Services
 
 			if (currentState.IsClosed)
 			{
+				var timestampToCompareWith = DateTime.Now.AddMilliseconds(-configuration.FailureRequestThresholdMilliseconds);
+
+				if(currentState.Timestamp > timestampToCompareWith)
+				{
+					timestampToCompareWith = new DateTime(currentState.Timestamp.Ticks);
+				}
+
 				//Do we need to open the circuit ?
 				var operations = (await operationTableReference.ExecuteQuerySegmentedAsync(
 					new TableQuery<OperationEntity>().Where(
 						TableQuery.CombineFilters(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, $"{serviceName}_{functionName}"),
 						TableOperators.And,
-						TableQuery.GenerateFilterConditionForDate("Timestamp", QueryComparisons.GreaterThan, DateTime.Now.AddMilliseconds(-configuration.FailureRequestThresholdMilliseconds)
+						TableQuery.GenerateFilterConditionForDate("Timestamp", QueryComparisons.GreaterThan, timestampToCompareWith
 					))), null)).Results;
-				
+
 				if (operations.Count(o => !o.IsSuccess) >= configuration.FailureRequestThreshold)
 				{
 					//Yes we do
@@ -110,21 +117,26 @@ namespace Functions.CircuitBreaker.Services
 					new TableQuery<OperationEntity>().Where(
 						TableQuery.CombineFilters(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, $"{serviceName}_{functionName}"),
 						TableOperators.And,
-						TableQuery.GenerateFilterConditionForBool("IsSuccess", QueryComparisons.Equal, false
-					))), null)).Results;
+						TableQuery.GenerateFilterConditionForBool("IsSuccess", QueryComparisons.Equal, false)
+						)), null)).Results;
 
 
 				//Since the latest failure, did we reach the threshold to close the circuit ?
-				var latestFailure = failures.OrderByDescending(o => DateTime.Parse(o.RowKey)).FirstOrDefault();
-
+				var latestFailure = failures.OrderByDescending(o => o.Timestamp).FirstOrDefault();
+				
 				var successSinceLatestFailure = (await operationTableReference.ExecuteQuerySegmentedAsync(
 					new TableQuery<OperationEntity>().Where(
 						TableQuery.CombineFilters(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, $"{serviceName}_{functionName}"),
 						TableOperators.And,
-						TableQuery.GenerateFilterConditionForDate("Timestamp", QueryComparisons.GreaterThan, DateTime.Parse(latestFailure.RowKey)
-					))), null)).Results;
+						TableQuery.GenerateFilterConditionForDate("Timestamp", QueryComparisons.GreaterThan, latestFailure.Timestamp)
+						)), null)).Results.Where(r => r.IsSuccess);
 
-				if(successSinceLatestFailure != null && successSinceLatestFailure.Count() >= configuration.HalfOpenSuccessThreshold)
+				if(successSinceLatestFailure == null || !successSinceLatestFailure.Any())
+				{
+					//If the latest is a failure, the circuit should be reopened
+					await _circuitBreakerStateService.OpenCircuitAsync(serviceName, functionName);
+				}
+				else if (successSinceLatestFailure.Count() >= configuration.HalfOpenSuccessThreshold)
 				{
 					//There we close it
 					await _circuitBreakerStateService.CloseCircuitAsync(serviceName, functionName);
